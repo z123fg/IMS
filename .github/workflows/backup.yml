@@ -1,0 +1,35 @@
+# Supabase 免费版没有自动备份：每周导出数据库（及可选的图片），保存为 workflow artifact 30 天
+name: Supabase backup
+
+on:
+  schedule:
+    - cron: '23 4 * * 1'
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Dump database (public schema)
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          mkdir -p backup
+          docker run --rm -v "$PWD/backup:/out" postgres:17 \
+            pg_dump "$SUPABASE_DB_URL" --schema=public --no-owner --no-privileges -f /out/ims-db.sql
+          ls -lh backup
+
+      - name: Download images (optional)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        if: env.SUPABASE_SERVICE_ROLE_KEY != ''
+        run: node scripts/backup-images.mjs backup/images
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ims-backup-${{ github.run_number }}
+          path: backup
+          retention-days: 30

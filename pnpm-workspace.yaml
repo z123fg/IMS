@@ -1,0 +1,6 @@
+# 两者的 postinstall 只打印感谢横幅，无需执行
+allowBuilds:
+  '@turbodocx/html-to-docx': false
+  core-js: false
+  # 安装时从 GitHub Releases 下载 Supabase CLI 二进制
+  supabase: true
