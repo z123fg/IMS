@@ -1,0 +1,11 @@
+// Cloudflare Workers 静态资源部署配置（纯前端，无 Worker 脚本）
+// 构建：pnpm build → dist；部署：npx wrangler deploy
+{
+  "name": "ims",
+  "compatibility_date": "2026-09-30",
+  "assets": {
+    "directory": "./dist",
+    // 单页应用：/login、/?open=… 等路径都回退到 index.html，由前端路由处理
+    "not_found_handling": "single-page-application"
+  }
+}
