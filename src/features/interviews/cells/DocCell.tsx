@@ -33,6 +33,8 @@ export function DocCell({ field, hasContent, active, onClick }: Props) {
         const palette = (theme.vars ?? theme).palette
         return {
           height: 32,
+          maxWidth: '100%',
+          minWidth: 0,
           pl: 1.1,
           whiteSpace: 'nowrap',
           pr: 0.6,
@@ -57,18 +59,22 @@ export function DocCell({ field, hasContent, active, onClick }: Props) {
         }
       }}
     >
-      <Icon sx={{ fontSize: 17 }} />
-      {hasContent ? label : `+ ${label}`}
+      <Icon sx={{ fontSize: 17, flex: 'none' }} />
+      {/* 空间不足时文字显示省略号，不溢出到相邻列 */}
+      <Box component="span" sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        {hasContent ? label : `+ ${label}`}
+      </Box>
       {hasContent && !active && (
         <Box
           component="span"
           aria-hidden
-          sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'success.main', ml: 0.25 }}
+          sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'success.main', ml: 0.25, flex: 'none' }}
         />
       )}
       <ExpandMore
         sx={{
           fontSize: 18,
+          flex: 'none',
           transition: 'transform 220ms ease',
           transform: active ? 'rotate(180deg)' : 'none',
           opacity: active ? 1 : 0.55,

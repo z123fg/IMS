@@ -8,7 +8,7 @@ import { DateCell, DateTimeCell } from './cells/DateCells'
 import { DocCell } from './cells/DocCell'
 import { RowActions } from './cells/RowActions'
 import { ComboCell } from './cells/ComboCell'
-import { GRID_COLUMNS, HEADER_H, ROW_H } from './layout'
+import { gridColumns, HEADER_H, ROW_H } from './layout'
 import { useUpdateInterview } from './queries'
 import type { SearchField, SearchHit } from '@/features/search/searchIndex'
 import { SearchSnippet } from './SearchSnippet'
@@ -41,6 +41,8 @@ function Cell({ children, center, matched }: { children: React.ReactNode; center
         px: 0.75,
         minWidth: 0,
         height: '100%',
+        // 兜底：内容再长也不压到相邻列（焦点环在内边距内，不会被裁掉）
+        overflow: 'hidden',
         display: 'flex',
         alignItems: 'center',
         justifyContent: center ? 'center' : 'flex-start',
@@ -124,7 +126,7 @@ export const InterviewRow = memo(function InterviewRow({
           const palette = (theme.vars ?? theme).palette
           return {
             display: 'grid',
-            gridTemplateColumns: GRID_COLUMNS,
+            gridTemplateColumns: gridColumns,
             height: ROW_H,
             alignItems: 'center',
             px: 1,

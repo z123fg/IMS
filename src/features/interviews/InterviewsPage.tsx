@@ -22,11 +22,11 @@ import { buildSearchIndex } from '@/features/search/searchIndex'
 import { applyFilters, typeOptions as buildTypeOptions, valueOptions, type SortKey } from './filter'
 import { GridHeader } from './GridHeader'
 import { InterviewRow, type CellOptions } from './InterviewRow'
-import { GRID_COLUMNS, GRID_MIN_WIDTH, HEADER_H, ROW_H } from './layout'
+import { gridColumns, gridRootSx, HEADER_H, ROW_H, VIEWPORT_W_VAR } from './layout'
 import { ListToolbar } from './ListToolbar'
 import { errorMessage, useCreateInterview, useDeleteInterview, useInterviews } from './queries'
 import { listSearchDefaults, type ListSearch } from './search'
-import { useT } from '@/i18n'
+import { useLang, useT } from '@/i18n'
 import { rowTitle, type DocField, type Interview } from './types'
 
 const route = getRouteApi('/_authed/')
@@ -45,12 +45,13 @@ const DEFAULT_DIR: Record<SortKey, 'asc' | 'desc'> = {
 export function InterviewsPage() {
   const search = route.useSearch()
   const m = useT()
+  const lang = useLang()
   const navigate = route.useNavigate()
   const { data, isPending, isError, error, refetch } = useInterviews()
   const create = useCreateInterview()
   const remove = useDeleteInterview()
   const scrollRef = useRef<HTMLDivElement>(null)
-  const viewportHeight = useElementHeight(scrollRef)
+  const viewport = useElementSize(scrollRef)
 
   // 新建的行固定在顶部（即使不符合当前筛选/排序），直到筛选条件变化
   const [deleting, setDeleting] = useState<Interview | null>(null)
@@ -155,7 +156,11 @@ export function InterviewsPage() {
           boxShadow: '0 1px 2px rgba(15, 23, 42, 0.04)',
         }}
       >
-        <Box role="table" aria-label={m.list.ariaLabel} sx={{ minWidth: GRID_MIN_WIDTH }}>
+        <Box
+          role="table"
+          aria-label={m.list.ariaLabel}
+          sx={{ ...gridRootSx(lang), [VIEWPORT_W_VAR]: `${viewport.width}px` }}
+        >
           <GridHeader
             sort={sort}
             dir={dir}
@@ -200,7 +205,7 @@ export function InterviewsPage() {
           )}
           {/* 有行展开时在末尾留白，保证该行（即使在列表末尾、文档很短）也能滚到吸顶位 */}
           {search.open && rows.some((r) => r.id === search.open) && (
-            <Box aria-hidden sx={{ height: Math.max(0, viewportHeight - HEADER_H - ROW_H) }} />
+            <Box aria-hidden sx={{ height: Math.max(0, viewport.height - HEADER_H - ROW_H) }} />
           )}
         </Box>
       </Box>
@@ -225,17 +230,17 @@ export function InterviewsPage() {
   )
 }
 
-/** 元素的可视高度，随窗口尺寸变化更新 */
-function useElementHeight(ref: React.RefObject<HTMLElement | null>) {
-  const [height, setHeight] = useState(0)
+/** 元素的可视尺寸（不含滚动条），随窗口尺寸变化更新 */
+function useElementSize(ref: React.RefObject<HTMLElement | null>) {
+  const [size, setSize] = useState({ width: 0, height: 0 })
   useEffect(() => {
     const el = ref.current
     if (!el) return
-    const ro = new ResizeObserver(() => setHeight(el.clientHeight))
+    const ro = new ResizeObserver(() => setSize({ width: el.clientWidth, height: el.clientHeight }))
     ro.observe(el)
     return () => ro.disconnect()
   }, [ref])
-  return height
+  return size
 }
 
 function LoadingRows() {
@@ -246,7 +251,7 @@ function LoadingRows() {
           key={i}
           sx={{
             display: 'grid',
-            gridTemplateColumns: GRID_COLUMNS,
+            gridTemplateColumns: gridColumns,
             height: ROW_H,
             alignItems: 'center',
             px: 2.5,

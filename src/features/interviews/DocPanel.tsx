@@ -12,6 +12,7 @@ import { signImagePaths } from '@/features/editor/images'
 import { docKey } from '@/features/editor/useDocAutosave'
 import { useT } from '@/i18n'
 import { fetchDoc } from './api'
+import { VIEWPORT_W_VAR } from './layout'
 import { errorMessage } from './queries'
 import type { DocField, Interview } from './types'
 
@@ -44,6 +45,10 @@ export function DocPanel({ row, field, onSwitch, onClose, highlight }: Props) {
   return (
     <Box
       sx={(theme) => ({
+        // 表格比窗口宽时会横向滚动：面板固定在可视区域内，工具栏与导出按钮始终可见
+        position: 'sticky',
+        left: 0,
+        width: `var(${VIEWPORT_W_VAR}, 100%)`,
         bgcolor: theme.alpha((theme.vars ?? theme).palette.primary.main, 0.035),
         borderTop: 1,
         borderColor: 'divider',

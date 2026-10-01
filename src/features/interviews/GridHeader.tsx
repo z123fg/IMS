@@ -2,7 +2,7 @@ import Box from '@mui/material/Box'
 import TableSortLabel from '@mui/material/TableSortLabel'
 import type { SortDir, SortKey, SortOption } from './filter'
 import { useT, type Messages } from '@/i18n'
-import { GRID_COLUMNS, HEADER_H } from './layout'
+import { gridColumns, HEADER_H } from './layout'
 
 const columns = (m: Messages): { label: string; sort?: SortKey }[] => [
   { label: m.columns.client, sort: 'client' },
@@ -27,7 +27,7 @@ export function GridHeader({ sort, dir, onSort }: Props) {
       role="row"
       sx={{
         display: 'grid',
-        gridTemplateColumns: GRID_COLUMNS,
+        gridTemplateColumns: gridColumns,
         height: HEADER_H,
         alignItems: 'center',
         px: 1,
