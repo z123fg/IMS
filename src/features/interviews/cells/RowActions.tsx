@@ -5,14 +5,16 @@ import ListItemIcon from '@mui/material/ListItemIcon'
 import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
 import { useState } from 'react'
+import { useT } from '@/i18n'
 
 export function RowActions({ onDelete }: { onDelete: () => void }) {
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const m = useT()
   return (
     <>
       <IconButton
         size="small"
-        aria-label="更多操作"
+        aria-label={m.cells.more}
         onClick={(e) => setAnchor(e.currentTarget)}
         sx={{ color: 'text.secondary' }}
       >
@@ -35,7 +37,7 @@ export function RowActions({ onDelete }: { onDelete: () => void }) {
           <ListItemIcon sx={{ color: 'inherit' }}>
             <DeleteOutline fontSize="small" />
           </ListItemIcon>
-          删除面试
+          {m.cells.deleteRow}
         </MenuItem>
       </Menu>
     </>

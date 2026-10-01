@@ -1,25 +1,27 @@
 import Box from '@mui/material/Box'
 import TableSortLabel from '@mui/material/TableSortLabel'
 import type { SortDir, SortKey, SortOption } from './filter'
+import { useT, type Messages } from '@/i18n'
 import { GRID_COLUMNS, HEADER_H } from './layout'
 
-const COLUMNS: { label: string; sort?: SortKey }[] = [
-  { label: 'Client', sort: 'client' },
-  { label: 'Vendor', sort: 'vendor' },
-  { label: '面试者', sort: 'interviewee' },
-  { label: '面试官', sort: 'interviewer' },
-  { label: '面试类型', sort: 'interview_type' },
-  { label: '收到面试日期', sort: 'received_at' },
-  { label: '面试日期', sort: 'interview_at' },
-  { label: 'JD' },
-  { label: '材料' },
-  { label: '面试题' },
+const columns = (m: Messages): { label: string; sort?: SortKey }[] => [
+  { label: m.columns.client, sort: 'client' },
+  { label: m.columns.vendor, sort: 'vendor' },
+  { label: m.columns.interviewee, sort: 'interviewee' },
+  { label: m.columns.interviewer, sort: 'interviewer' },
+  { label: m.columns.interviewType, sort: 'interview_type' },
+  { label: m.columns.receivedAt, sort: 'received_at' },
+  { label: m.columns.interviewAt, sort: 'interview_at' },
+  { label: m.docs.jd },
+  { label: m.docs.materials },
+  { label: m.docs.questions },
   { label: '' },
 ]
 
 type Props = { sort: SortOption; dir: SortDir; onSort: (key: SortKey) => void }
 
 export function GridHeader({ sort, dir, onSort }: Props) {
+  const m = useT()
   return (
     <Box
       role="row"
@@ -41,7 +43,7 @@ export function GridHeader({ sort, dir, onSort }: Props) {
         color: 'text.secondary',
       }}
     >
-      {COLUMNS.map((c, i) => (
+      {columns(m).map((c, i) => (
         <Box
           key={i}
           role="columnheader"

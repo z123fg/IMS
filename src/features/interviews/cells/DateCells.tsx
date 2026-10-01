@@ -9,20 +9,23 @@ import dayjs, { type Dayjs } from 'dayjs'
 import { useRef, useState } from 'react'
 import { formatInterviewAt, formatReceived } from '../format'
 import { relativeHint, type RelativeTone } from '../relativeDate'
+import { useLang, useT } from '@/i18n'
 import { cellControlSx, flashSx, useFlash, type Flash } from './cellStyles'
 
 /** 单元格里显示为文字，点击打开日历弹层（不透传字段属性，全部从 picker 上下文读取） */
 function ButtonField({ id }: DatePickerFieldProps) {
   const picker = usePickerContext()
+  const lang = useLang()
+  const m = useT()
   const ref = useForkRef(picker.triggerRef, picker.rootRef)
   const value = picker.value as Dayjs | null
   const withTime = picker.views.includes('hours')
   const text = value?.isValid()
     ? withTime
-      ? formatInterviewAt(value.toISOString())
-      : formatReceived(value.format('YYYY-MM-DD'))
+      ? formatInterviewAt(value.toISOString(), lang)
+      : formatReceived(value.format('YYYY-MM-DD'), lang)
     : ''
-  const hint = value?.isValid() ? relativeHint(value) : null
+  const hint = value?.isValid() ? relativeHint(value, dayjs(), lang) : null
   const past = withTime && value ? value.isBefore(dayjs()) : false
 
   return (
@@ -45,7 +48,7 @@ function ButtonField({ id }: DatePickerFieldProps) {
       })}
     >
       <Box component="span" sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
-        {text || (withTime ? '设置时间' : '设置日期')}
+        {text || (withTime ? m.cells.setTime : m.cells.setDate)}
       </Box>
       {hint && (
         <Box component="span" sx={(theme) => hintSx(theme, hint.tone)}>

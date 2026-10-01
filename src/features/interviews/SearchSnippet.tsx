@@ -3,7 +3,8 @@ import DescriptionOutlined from '@mui/icons-material/DescriptionOutlined'
 import QuizOutlined from '@mui/icons-material/QuizOutlined'
 import Box from '@mui/material/Box'
 import ButtonBase from '@mui/material/ButtonBase'
-import { FIELD_LABEL, type Snippet } from '@/features/search/searchIndex'
+import { fieldLabel, type Snippet } from '@/features/search/searchIndex'
+import { useT } from '@/i18n'
 import type { DocField } from './types'
 
 const ICON: Record<DocField, typeof DescriptionOutlined> = {
@@ -15,10 +16,12 @@ const ICON: Record<DocField, typeof DescriptionOutlined> = {
 /** 搜索命中文档正文时，在行下方显示一行片段；点击打开该文档并定位到命中处 */
 export function SearchSnippet({ snippet, onOpen }: { snippet: Snippet; onOpen: (field: DocField) => void }) {
   const Icon = ICON[snippet.field]
+  const m = useT()
+  const label = fieldLabel(m, snippet.field)
   return (
     <ButtonBase
       onClick={() => onOpen(snippet.field)}
-      aria-label={`打开${FIELD_LABEL[snippet.field]}中的搜索结果`}
+      aria-label={m.search.openHit(label)}
       sx={(theme) => {
         const palette = (theme.vars ?? theme).palette
         return {
@@ -49,14 +52,14 @@ export function SearchSnippet({ snippet, onOpen }: { snippet: Snippet; onOpen: (
         sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, fontWeight: 700, color: 'text.primary', flex: 'none' }}
       >
         <Icon sx={{ fontSize: 16 }} />
-        {FIELD_LABEL[snippet.field]}
+        {label}
       </Box>
       <Box component="span" sx={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
         {snippet.parts.map((p, i) => (p.hit ? <mark key={i}>{p.text}</mark> : <span key={i}>{p.text}</span>))}
       </Box>
       {snippet.count > 1 && (
         <Box component="span" sx={{ flex: 'none', fontSize: 12 }}>
-          共 {snippet.count} 处
+          {m.search.count(snippet.count)}
         </Box>
       )}
       <Box
@@ -64,7 +67,7 @@ export function SearchSnippet({ snippet, onOpen }: { snippet: Snippet; onOpen: (
         className="open-hint"
         sx={{ flex: 'none', fontSize: 12, fontWeight: 600, color: 'primary.main', opacity: 0.6, transition: 'opacity 150ms' }}
       >
-        打开 →
+        {m.search.open}
       </Box>
     </ButtonBase>
   )

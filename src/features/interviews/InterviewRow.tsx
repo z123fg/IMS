@@ -3,6 +3,7 @@ import Collapse from '@mui/material/Collapse'
 import LinearProgress from '@mui/material/LinearProgress'
 import { lazy, memo, Suspense, useLayoutEffect, useRef, useState, type RefObject } from 'react'
 import { PANEL_COLLAPSE_CLASS } from '@/features/editor/panelLayout'
+import { useT } from '@/i18n'
 import { DateCell, DateTimeCell } from './cells/DateCells'
 import { DocCell } from './cells/DocCell'
 import { RowActions } from './cells/RowActions'
@@ -69,6 +70,7 @@ export const InterviewRow = memo(function InterviewRow({
   const expanded = openDoc !== null
   const sectionRef = useRef<HTMLElement>(null)
   const update = useUpdateInterview()
+  const m = useT()
   // 收起动画期间继续渲染最后打开的文档，避免内容先消失
   const [shownDoc, setShownDoc] = useState(openDoc)
   if (openDoc && openDoc !== shownDoc) setShownDoc(openDoc)
@@ -144,22 +146,22 @@ export const InterviewRow = memo(function InterviewRow({
           <ComboCell
             value={row.client}
             options={options.client}
-            label="Client"
-            placeholder="客户名称"
+            label={m.columns.client}
+            placeholder={m.cells.clientPlaceholder}
             bold
             autoFocus={autoFocus}
             onCommit={(v) => commit({ client: v })}
           />
         </Cell>
         <Cell matched={matched('vendor')}>
-          <ComboCell value={row.vendor} options={options.vendor} label="Vendor" placeholder="供应商 / 渠道" onCommit={(v) => commit({ vendor: v })} />
+          <ComboCell value={row.vendor} options={options.vendor} label={m.columns.vendor} placeholder={m.cells.vendorPlaceholder} onCommit={(v) => commit({ vendor: v })} />
         </Cell>
         <Cell matched={matched('interviewee')}>
           <ComboCell
             value={row.interviewee}
             options={options.interviewee}
-            label="面试者"
-            placeholder="面试者"
+            label={m.columns.interviewee}
+            placeholder={m.cells.intervieweePlaceholder}
             onCommit={(v) => commit({ interviewee: v })}
           />
         </Cell>
@@ -167,8 +169,8 @@ export const InterviewRow = memo(function InterviewRow({
           <ComboCell
             value={row.interviewer}
             options={options.interviewer}
-            label="面试官"
-            placeholder="面试官"
+            label={m.columns.interviewer}
+            placeholder={m.cells.interviewerPlaceholder}
             onCommit={(v) => commit({ interviewer: v })}
           />
         </Cell>
@@ -176,16 +178,16 @@ export const InterviewRow = memo(function InterviewRow({
           <ComboCell
             value={row.interview_type}
             options={options.interview_type}
-            label="面试类型"
-            placeholder="选择或输入"
+            label={m.columns.interviewType}
+            placeholder={m.cells.typePlaceholder}
             onCommit={(v) => commit({ interview_type: v })}
           />
         </Cell>
         <Cell>
-          <DateCell value={row.received_at} label="收到面试日期" onCommit={(v) => commit({ received_at: v })} />
+          <DateCell value={row.received_at} label={m.columns.receivedAt} onCommit={(v) => commit({ received_at: v })} />
         </Cell>
         <Cell>
-          <DateTimeCell value={row.interview_at} label="面试日期" onCommit={(v) => commit({ interview_at: v })} />
+          <DateTimeCell value={row.interview_at} label={m.columns.interviewAt} onCommit={(v) => commit({ interview_at: v })} />
         </Cell>
         {DOC_FIELDS.map((f) => (
           <Cell key={f} matched={matched(f)}>

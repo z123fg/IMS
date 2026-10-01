@@ -13,12 +13,13 @@ import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
 import { useState } from 'react'
 import { useSession } from '@/features/auth/session'
+import { useT } from '@/i18n'
 import { queryClient } from '@/lib/queryClient'
 import { supabase } from '@/lib/supabase'
+import { LanguageSwitch } from './LanguageSwitch'
 import { LogoMark } from './LogoMark'
 
 const MODES = ['system', 'light', 'dark'] as const
-const MODE_LABEL = { system: '跟随系统', light: '浅色', dark: '深色' }
 const MODE_ICON = {
   system: <SettingsBrightnessOutlined fontSize="small" />,
   light: <LightModeOutlined fontSize="small" />,
@@ -27,6 +28,7 @@ const MODE_ICON = {
 
 export function AppHeader() {
   const session = useSession()
+  const m = useT()
   const { mode, setMode } = useColorScheme()
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   const email = session?.user.email ?? ''
@@ -56,16 +58,17 @@ export function AppHeader() {
     >
       <LogoMark size={30} />
       <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-        面试管理
+        {m.app.title}
       </Typography>
       <Box sx={{ flex: 1 }} />
-      <Tooltip title={`主题：${MODE_LABEL[current]}（点击切换为${MODE_LABEL[next]}）`}>
-        <IconButton size="small" onClick={() => setMode(next)} aria-label="切换主题">
+      <LanguageSwitch />
+      <Tooltip title={m.header.themeTooltip(m.header.themeLabel[current], m.header.themeLabel[next])}>
+        <IconButton size="small" onClick={() => setMode(next)} aria-label={m.header.toggleTheme}>
           {MODE_ICON[current]}
         </IconButton>
       </Tooltip>
       <Tooltip title={email}>
-        <IconButton size="small" onClick={(e) => setAnchor(e.currentTarget)} aria-label="账号菜单">
+        <IconButton size="small" onClick={(e) => setAnchor(e.currentTarget)} aria-label={m.header.account}>
           <Avatar sx={{ width: 30, height: 30, fontSize: 14, bgcolor: 'primary.main' }}>
             {email.slice(0, 1).toUpperCase() || '?'}
           </Avatar>
@@ -80,7 +83,7 @@ export function AppHeader() {
       >
         <Box sx={{ px: 2, py: 1 }}>
           <Typography variant="caption" color="text.secondary">
-            已登录
+            {m.header.signedIn}
           </Typography>
           <Typography variant="body2" sx={{ fontWeight: 600 }}>
             {email}
@@ -90,7 +93,7 @@ export function AppHeader() {
           <ListItemIcon>
             <Logout fontSize="small" />
           </ListItemIcon>
-          退出登录
+          {m.header.signOut}
         </MenuItem>
       </Menu>
     </Box>

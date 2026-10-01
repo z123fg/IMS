@@ -1,6 +1,7 @@
 import type { JSONContent } from '@tiptap/core'
 import { downloadImage } from '@/features/editor/images'
-import { DOC_LABEL, type DocField, type Interview } from '@/features/interviews/types'
+import { rowTitle, type DocField, type Interview } from '@/features/interviews/types'
+import { t } from '@/i18n'
 import { renderExportHtml, type ExportTarget, type ImageLoader } from './renderHtml'
 import { htmlToDocx } from './toDocx'
 import { htmlToPdf } from './toPdf'
@@ -15,8 +16,8 @@ const loadImage: ImageLoader = async (attrs) => {
 }
 
 function fileBase(row: Pick<Interview, 'client' | 'vendor'>, field: DocField) {
-  const parts = [row.client || '未命名', row.vendor, DOC_LABEL[field]].filter(Boolean)
-  return parts.join('-').replace(/[\\/:*?"<>|\s]+/g, '_')
+  const title = row.client || row.vendor ? [row.client, row.vendor].filter(Boolean).join('-') : rowTitle(row)
+  return `${title}-${t().docs[field]}`.replace(/[\\/:*?"<>|\s]+/g, '_')
 }
 
 function download(blob: Blob, name: string) {

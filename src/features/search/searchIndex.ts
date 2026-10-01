@@ -1,5 +1,6 @@
 import MiniSearch from 'minisearch'
 import { DOC_FIELDS, type DocField, type Interview } from '@/features/interviews/types'
+import type { Messages } from '@/i18n'
 import { docText } from './docText'
 import { hanRuns, isHan, normalize, tokenize } from './tokenize'
 
@@ -10,15 +11,17 @@ export const SHORT_FIELDS = ['client', 'vendor', 'interviewee', 'interviewer', '
 export type ShortField = (typeof SHORT_FIELDS)[number]
 export type SearchField = ShortField | DocField
 
-export const FIELD_LABEL: Record<SearchField, string> = {
-  client: 'Client',
-  vendor: 'Vendor',
-  interviewee: '面试者',
-  interviewer: '面试官',
-  interview_type: '面试类型',
-  jd: 'JD',
-  materials: '材料',
-  questions: '面试题',
+/** 字段的显示名（随界面语言） */
+export function fieldLabel(m: Messages, field: SearchField): string {
+  const c = m.columns
+  return {
+    client: c.client,
+    vendor: c.vendor,
+    interviewee: c.interviewee,
+    interviewer: c.interviewer,
+    interview_type: c.interviewType,
+    ...m.docs,
+  }[field]
 }
 
 export type SnippetPart = { text: string; hit: boolean }

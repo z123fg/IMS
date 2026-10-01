@@ -2,7 +2,8 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { saveDoc, type SavedDoc } from '@/features/interviews/api'
 import { applySavedDoc, errorMessage } from '@/features/interviews/queries'
-import { DOC_LABEL, rowTitle, type DocField, type Interview } from '@/features/interviews/types'
+import { rowTitle, type DocField, type Interview } from '@/features/interviews/types'
+import { t } from '@/i18n'
 import { notify } from '@/lib/notify'
 import { DocSaver, type SaveStatus } from './DocSaver'
 
@@ -24,7 +25,6 @@ export function useDocAutosave(opts: {
 
   const [saver] = useState(() => {
     const { row, field } = opts
-    const what = `「${rowTitle(row)}」的${DOC_LABEL[field]}`
     return new DocSaver<SavedDoc>(docKey(row.id, field), {
       rev: opts.initialRev,
       save: (doc, rev) => saveDoc(row.id, field, doc, rev),
@@ -32,8 +32,10 @@ export function useDocAutosave(opts: {
       onSaved: (doc, result) => applySavedDoc(qc, row.id, field, doc, result),
       // 面板已收起时（卸载后才完成的保存）用全局提示告知结果
       onConflict: () =>
-        mounted.current ? onConflict.current() : notify(`${what}未保存：他人已修改了这份文档`, 'error'),
-      onError: (err) => notify(`${what}保存失败：${errorMessage(err)}`, 'error'),
+        mounted.current
+          ? onConflict.current()
+          : notify(t().notify.docConflict(rowTitle(row), t().docs[field]), 'error'),
+      onError: (err) => notify(t().notify.docSaveFailed(rowTitle(row), t().docs[field], errorMessage(err)), 'error'),
     })
   })
 

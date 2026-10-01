@@ -23,8 +23,11 @@ export const StoredImage = ResizableImage.extend({
   },
 })
 
-/** 编辑器与导出共用同一套扩展，保证 schema 一致 */
-export function buildExtensions(placeholder = ''): Extensions {
+/**
+ * 编辑器与导出共用同一套扩展，保证 schema 一致。
+ * placeholder 可传函数：每次渲染时取值，切换界面语言后无需重建编辑器。
+ */
+export function buildExtensions(placeholder: string | (() => string) = ''): Extensions {
   return [
     // 表格插件优先级最低，放最前（见 mui-tiptap 文档）
     TableImproved.configure({ resizable: true }),
@@ -44,6 +47,6 @@ export function buildExtensions(placeholder = ''): Extensions {
     TaskList,
     TaskItem.configure({ nested: true }),
     StoredImage.configure({ allowBase64: false }),
-    Placeholder.configure({ placeholder }),
+    Placeholder.configure({ placeholder: typeof placeholder === 'function' ? () => placeholder() : placeholder }),
   ]
 }

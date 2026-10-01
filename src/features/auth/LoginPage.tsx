@@ -12,12 +12,15 @@ import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import { useRouter } from '@tanstack/react-router'
 import { useState, type FormEvent } from 'react'
+import { LanguageSwitch } from '@/components/LanguageSwitch'
 import { LogoMark } from '@/components/LogoMark'
+import { useT } from '@/i18n'
 import { supabase } from '@/lib/supabase'
 import { safeRedirect } from './session'
 
 export function LoginPage({ redirect }: { redirect?: string }) {
   const router = useRouter()
+  const m = useT()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -30,7 +33,7 @@ export function LoginPage({ redirect }: { redirect?: string }) {
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
     if (error) {
       setLoading(false)
-      setError(error.message === 'Invalid login credentials' ? '邮箱或密码错误' : `登录失败：${error.message}`)
+      setError(error.message === 'Invalid login credentials' ? m.auth.invalid : m.auth.failed(error.message))
       return
     }
     router.history.push(safeRedirect(redirect))
@@ -50,6 +53,9 @@ export function LoginPage({ redirect }: { redirect?: string }) {
         ].join(','),
       })}
     >
+      <Box sx={{ position: 'fixed', top: 16, right: 16 }}>
+        <LanguageSwitch />
+      </Box>
       <Grow in timeout={450}>
         <Paper
           component="form"
@@ -70,10 +76,10 @@ export function LoginPage({ redirect }: { redirect?: string }) {
               <LogoMark size={44} />
               <Box>
                 <Typography variant="h6" component="h1">
-                  登录 IMS
+                  {m.auth.heading}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  面试管理系统 · 内部使用
+                  {m.auth.subtitle}
                 </Typography>
               </Box>
             </Stack>
@@ -85,7 +91,7 @@ export function LoginPage({ redirect }: { redirect?: string }) {
             </Collapse>
 
             <TextField
-              label="邮箱"
+              label={m.auth.email}
               type="email"
               autoComplete="email"
               autoFocus
@@ -104,7 +110,7 @@ export function LoginPage({ redirect }: { redirect?: string }) {
               }}
             />
             <TextField
-              label="密码"
+              label={m.auth.password}
               type="password"
               autoComplete="current-password"
               required
@@ -122,10 +128,10 @@ export function LoginPage({ redirect }: { redirect?: string }) {
               }}
             />
             <Button type="submit" variant="contained" size="large" loading={loading} fullWidth>
-              登录
+              {m.auth.submit}
             </Button>
             <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>
-              账号由管理员创建，如需开通请联系管理员
+              {m.auth.hint}
             </Typography>
           </Stack>
         </Paper>

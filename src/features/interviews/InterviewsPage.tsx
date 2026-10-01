@@ -26,6 +26,7 @@ import { GRID_COLUMNS, GRID_MIN_WIDTH, HEADER_H, ROW_H } from './layout'
 import { ListToolbar } from './ListToolbar'
 import { errorMessage, useCreateInterview, useDeleteInterview, useInterviews } from './queries'
 import { listSearchDefaults, type ListSearch } from './search'
+import { useT } from '@/i18n'
 import { rowTitle, type DocField, type Interview } from './types'
 
 const route = getRouteApi('/_authed/')
@@ -43,6 +44,7 @@ const DEFAULT_DIR: Record<SortKey, 'asc' | 'desc'> = {
 
 export function InterviewsPage() {
   const search = route.useSearch()
+  const m = useT()
   const navigate = route.useNavigate()
   const { data, isPending, isError, error, refetch } = useInterviews()
   const create = useCreateInterview()
@@ -153,7 +155,7 @@ export function InterviewsPage() {
           boxShadow: '0 1px 2px rgba(15, 23, 42, 0.04)',
         }}
       >
-        <Box role="table" aria-label="面试列表" sx={{ minWidth: GRID_MIN_WIDTH }}>
+        <Box role="table" aria-label={m.list.ariaLabel} sx={{ minWidth: GRID_MIN_WIDTH }}>
           <GridHeader
             sort={sort}
             dir={dir}
@@ -168,11 +170,11 @@ export function InterviewsPage() {
                 severity="error"
                 action={
                   <Button color="inherit" size="small" onClick={() => void refetch()}>
-                    重试
+                    {m.common.retry}
                   </Button>
                 }
               >
-                加载失败：{errorMessage(error)}
+                {m.common.loadFailed(errorMessage(error))}
               </Alert>
             </Box>
           ) : rows.length === 0 ? (
@@ -204,18 +206,18 @@ export function InterviewsPage() {
       </Box>
 
       <Dialog open={deleting !== null} onClose={() => !remove.isPending && setDeleting(null)} slots={{ transition: Zoom }}>
-        <DialogTitle>删除这条面试？</DialogTitle>
+        <DialogTitle>{m.list.deleteTitle}</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            「{deleting ? rowTitle(deleting) : ''}」的记录、JD、材料及其中的图片将被永久删除，无法恢复。
+            {m.list.deleteBody(deleting ? rowTitle(deleting) : '')}
           </DialogContentText>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2.5 }}>
           <Button color="inherit" onClick={() => setDeleting(null)} disabled={remove.isPending}>
-            取消
+            {m.common.cancel}
           </Button>
           <Button color="error" variant="contained" onClick={confirmDelete} loading={remove.isPending}>
-            删除
+            {m.common.delete}
           </Button>
         </DialogActions>
       </Dialog>
@@ -263,6 +265,7 @@ function LoadingRows() {
 }
 
 function EmptyState({ filtered, onCreate, onClear }: { filtered: boolean; onCreate: () => void; onClear: () => void }) {
+  const m = useT()
   return (
     <Fade in timeout={400}>
       <Stack sx={{ alignItems: 'center', py: 10, px: 3, gap: 1.5, textAlign: 'center' }}>
@@ -279,17 +282,17 @@ function EmptyState({ filtered, onCreate, onClear }: { filtered: boolean; onCrea
         >
           {filtered ? <FilterAltOffOutlined /> : <EventNoteOutlined />}
         </Box>
-        <Typography variant="h6">{filtered ? '没有符合条件的面试' : '还没有面试记录'}</Typography>
+        <Typography variant="h6">{filtered ? m.list.emptyFiltered : m.list.empty}</Typography>
         <Typography variant="body2" color="text.secondary">
-          {filtered ? '试试调整搜索词或筛选条件' : '收到面试邀请后，新建一条记录并附上 JD 与准备材料'}
+          {filtered ? m.list.emptyFilteredHint : m.list.emptyHint}
         </Typography>
         {filtered ? (
           <Button onClick={onClear} sx={{ mt: 1 }}>
-            清除筛选
+            {m.list.clearFilters}
           </Button>
         ) : (
           <Button variant="contained" startIcon={<Add />} onClick={onCreate} sx={{ mt: 1 }}>
-            新建面试
+            {m.toolbar.create}
           </Button>
         )}
       </Stack>

@@ -59,3 +59,26 @@ describe('relativeHint', () => {
     expect([1, 2, 3, 10, 11, 12, 19, 25].map(cnNumber)).toEqual(['一', '两', '三', '十', '十一', '十二', '十九', '25'])
   })
 })
+
+describe('relativeHint（English）', () => {
+  const en = (d: string) => relativeHint(d, now, 'en')?.label
+  it('days, weeks, months, years', () => {
+    expect(en('2026-09-30')).toBe('Today')
+    expect(en('2026-10-01')).toBe('Tomorrow')
+    expect(en('2026-10-02')).toBe('In 2 days')
+    expect(en('2026-09-29')).toBe('Yesterday')
+    expect(en('2026-09-28')).toBe('2 days ago')
+    expect(en('2026-10-03')).toBe('This Sat')
+    expect(en('2026-10-05')).toBe('Next Mon')
+    expect(en('2026-09-21')).toBe('Last Mon')
+    expect(en('2026-10-12')).toBe('In 2 weeks')
+    expect(en('2026-09-07')).toBe('3 weeks ago')
+    expect(en('2026-11-10')).toBe('In 1 month')
+    expect(en('2026-07-01')).toBe('3 months ago')
+    expect(en('2025-08-01')).toBe('1 year ago')
+    expect(en('2028-10-01')).toBe('In 2 years')
+  })
+  it('tone does not depend on language', () => {
+    expect(relativeHint('2026-10-01', now, 'en')?.tone).toBe('urgent')
+  })
+})

@@ -4,7 +4,8 @@ import ExpandMore from '@mui/icons-material/ExpandMore'
 import QuizOutlined from '@mui/icons-material/QuizOutlined'
 import Box from '@mui/material/Box'
 import ButtonBase from '@mui/material/ButtonBase'
-import { DOC_LABEL, type DocField } from '../types'
+import { useT } from '@/i18n'
+import type { DocField } from '../types'
 
 type Props = {
   field: DocField
@@ -21,11 +22,13 @@ const ICON: Record<DocField, typeof DescriptionOutlined> = {
 
 export function DocCell({ field, hasContent, active, onClick }: Props) {
   const Icon = ICON[field]
+  const m = useT()
+  const label = m.docs[field]
   return (
     <ButtonBase
       onClick={onClick}
       aria-expanded={active}
-      aria-label={`${active ? '收起' : '展开'}${DOC_LABEL[field]}`}
+      aria-label={active ? m.cells.collapse(label) : m.cells.expand(label)}
       sx={(theme) => {
         const palette = (theme.vars ?? theme).palette
         return {
@@ -55,7 +58,7 @@ export function DocCell({ field, hasContent, active, onClick }: Props) {
       }}
     >
       <Icon sx={{ fontSize: 17 }} />
-      {hasContent ? DOC_LABEL[field] : `+ ${DOC_LABEL[field]}`}
+      {hasContent ? label : `+ ${label}`}
       {hasContent && !active && (
         <Box
           component="span"

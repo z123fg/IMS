@@ -1,5 +1,6 @@
 import type { JSONContent } from '@tiptap/core'
 import { queryOptions, useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
+import { t } from '@/i18n'
 import { notify } from '@/lib/notify'
 import { createInterview, deleteInterview, fetchInterviews, updateInterview, type SavedDoc } from './api'
 import { revField, type DocField, type FieldPatch, type Interview } from './types'
@@ -42,7 +43,7 @@ export function useUpdateInterview() {
     },
     onError: (err, { id }, ctx) => {
       if (ctx?.rollback) patchRow(qc, id, ctx.rollback)
-      notify(`保存失败：${errorMessage(err)}`, 'error')
+      notify(t().notify.saveFailed(errorMessage(err)), 'error')
     },
     onSuccess: (row) => patchRow(qc, row.id, row),
   })
@@ -55,7 +56,7 @@ export function useCreateInterview() {
     onSuccess: (row) => {
       qc.setQueryData<Interview[]>(interviewsKey, (rows) => [row, ...(rows ?? [])])
     },
-    onError: (err) => notify(`新建失败：${errorMessage(err)}`, 'error'),
+    onError: (err) => notify(t().notify.createFailed(errorMessage(err)), 'error'),
   })
 }
 
@@ -65,9 +66,9 @@ export function useDeleteInterview() {
     mutationFn: (id: string) => deleteInterview(id),
     onSuccess: (_, id) => {
       qc.setQueryData<Interview[]>(interviewsKey, (rows) => rows?.filter((r) => r.id !== id))
-      notify('已删除', 'success')
+      notify(t().notify.deleted, 'success')
     },
-    onError: (err) => notify(`删除失败：${errorMessage(err)}`, 'error'),
+    onError: (err) => notify(t().notify.deleteFailed(errorMessage(err)), 'error'),
   })
 }
 

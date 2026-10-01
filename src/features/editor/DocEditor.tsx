@@ -38,22 +38,18 @@ import { exportDocument } from '@/features/export/exportDoc'
 import type { ExportTarget } from '@/features/export/renderHtml'
 import { fetchDoc } from '@/features/interviews/api'
 import { errorMessage } from '@/features/interviews/queries'
-import { DOC_LABEL, type DocField, type Interview } from '@/features/interviews/types'
+import type { DocField, Interview } from '@/features/interviews/types'
+import { t, useLang, useT } from '@/i18n'
 import { notify } from '@/lib/notify'
 import { serializeDoc } from './doc'
 import type { SaveStatus } from './DocSaver'
-import { EditorControls, LINK_MENU_LABELS, TABLE_MENU_LABELS } from './EditorControls'
+import { EditorControls } from './EditorControls'
 import { buildExtensions } from './extensions'
 import { SEARCH_HIT_CLASS, scrollToFirstHit, SearchHighlight, setSearchTerms } from './searchHighlight'
 import { isImageFile, uploadImages, type UploadedImage } from './images'
 import { stickyPanelHeaderSx } from './panelLayout'
 import { useDocAutosave } from './useDocAutosave'
 
-const PLACEHOLDER: Record<DocField, string> = {
-  jd: '粘贴或撰写职位描述（JD）…',
-  materials: '记录面试准备：项目亮点、参考链接、复盘笔记…（可直接粘贴截图）',
-  questions: '整理面试题：问题、参考答案、面试官的追问…',
-}
 
 type PanelBarProps = {
   field: DocField
@@ -64,6 +60,7 @@ type PanelBarProps = {
 
 /** 面板顶栏：JD / 材料切换 + 右侧操作；加载中也会显示 */
 export function PanelBar({ field, onSwitch, onClose, children }: PanelBarProps) {
+  const m = useT()
   return (
     <Stack direction="row" sx={{ alignItems: 'center', gap: 1, px: 1.5, height: 46 }}>
       <Tabs
@@ -75,13 +72,13 @@ export function PanelBar({ field, onSwitch, onClose, children }: PanelBarProps) 
           '& .MuiTabs-indicator': { height: 3, borderRadius: 3 },
         }}
       >
-        <Tab value="jd" label="JD" icon={<DescriptionOutlined sx={{ fontSize: 18 }} />} iconPosition="start" />
-        <Tab value="materials" label="材料" icon={<AutoStoriesOutlined sx={{ fontSize: 18 }} />} iconPosition="start" />
-        <Tab value="questions" label="面试题" icon={<QuizOutlined sx={{ fontSize: 18 }} />} iconPosition="start" />
+        <Tab value="jd" label={m.docs.jd} icon={<DescriptionOutlined sx={{ fontSize: 18 }} />} iconPosition="start" />
+        <Tab value="materials" label={m.docs.materials} icon={<AutoStoriesOutlined sx={{ fontSize: 18 }} />} iconPosition="start" />
+        <Tab value="questions" label={m.docs.questions} icon={<QuizOutlined sx={{ fontSize: 18 }} />} iconPosition="start" />
       </Tabs>
       {children}
-      <Tooltip title="收起">
-        <IconButton size="small" onClick={onClose} aria-label="收起面板">
+      <Tooltip title={m.editor.collapse}>
+        <IconButton size="small" onClick={onClose} aria-label={m.editor.collapsePanel}>
           <ExpandLess />
         </IconButton>
       </Tooltip>
@@ -90,32 +87,33 @@ export function PanelBar({ field, onSwitch, onClose, children }: PanelBarProps) 
 }
 
 
-const STATUS: Record<SaveStatus, { icon: ReactNode; text: string; color: string }> = {
-  saved: { icon: <CloudDoneOutlined sx={{ fontSize: 16 }} />, text: '已保存', color: 'text.secondary' },
-  dirty: { icon: <EditOutlined sx={{ fontSize: 16 }} />, text: '未保存', color: 'text.secondary' },
-  saving: { icon: <CircularProgress size={12} thickness={5} />, text: '保存中…', color: 'text.secondary' },
-  error: { icon: <ErrorOutline sx={{ fontSize: 16 }} />, text: '保存失败', color: 'error.main' },
-  conflict: { icon: <WarningAmberOutlined sx={{ fontSize: 16 }} />, text: '有冲突', color: 'warning.main' },
+const STATUS: Record<SaveStatus, { icon: ReactNode; color: string }> = {
+  saved: { icon: <CloudDoneOutlined sx={{ fontSize: 16 }} />, color: 'text.secondary' },
+  dirty: { icon: <EditOutlined sx={{ fontSize: 16 }} />, color: 'text.secondary' },
+  saving: { icon: <CircularProgress size={12} thickness={5} />, color: 'text.secondary' },
+  error: { icon: <ErrorOutline sx={{ fontSize: 16 }} />, color: 'error.main' },
+  conflict: { icon: <WarningAmberOutlined sx={{ fontSize: 16 }} />, color: 'warning.main' },
 }
 
 type IndicatorProps = { status: SaveStatus; uploading: number; onRetry: () => void; onResolve: () => void }
 
 function SaveIndicator({ status, uploading, onRetry, onResolve }: IndicatorProps) {
   const s = STATUS[status]
+  const m = useT()
   return (
     <Stack direction="row" sx={{ alignItems: 'center', gap: 1, ml: 1, minWidth: 0 }} aria-live="polite">
       <Fade in key={status} timeout={250}>
         <Stack direction="row" sx={{ alignItems: 'center', gap: 0.5, color: s.color, fontSize: 13, whiteSpace: 'nowrap' }}>
           {s.icon}
-          {s.text}
+          {m.editor.status[status]}
           {status === 'error' && (
             <Button size="small" color="error" onClick={onRetry} sx={{ ml: 0.5, minWidth: 0, py: 0 }}>
-              重试
+              {m.common.retry}
             </Button>
           )}
           {status === 'conflict' && (
             <Button size="small" color="warning" onClick={onResolve} sx={{ ml: 0.5, minWidth: 0, py: 0 }}>
-              处理
+              {m.editor.resolve}
             </Button>
           )}
         </Stack>
@@ -123,7 +121,7 @@ function SaveIndicator({ status, uploading, onRetry, onResolve }: IndicatorProps
       {uploading > 0 && (
         <Stack direction="row" sx={{ alignItems: 'center', gap: 0.5, color: 'primary.main', fontSize: 13, whiteSpace: 'nowrap' }}>
           <CircularProgress size={12} thickness={5} />
-          图片上传中…
+          {m.editor.uploading}
         </Stack>
       )}
     </Stack>
@@ -155,6 +153,9 @@ type Props = {
 }
 
 export function DocEditor({ row, field, initialDoc, initialRev, onSwitch, onClose, onReload, highlight }: Props) {
+  const m = useT()
+  const lang = useLang()
+  const docLabel = m.docs[field]
   const [conflictOpen, setConflictOpen] = useState(false)
   const [uploading, setUploading] = useState(0)
   const [exporting, setExporting] = useState<ExportTarget | null>(null)
@@ -166,7 +167,7 @@ export function DocEditor({ row, field, initialDoc, initialRev, onSwitch, onClos
     try {
       return await uploadImages(row.id, files)
     } catch (err) {
-      notify(`图片上传失败：${errorMessage(err)}`, 'error')
+      notify(t().notify.uploadFailed(errorMessage(err)), 'error')
       return []
     } finally {
       setUploading((n) => n - 1)
@@ -177,7 +178,8 @@ export function DocEditor({ row, field, initialDoc, initialRev, onSwitch, onClos
     uploadRef.current = upload
   })
 
-  const extensions = useMemo(() => [...buildExtensions(PLACEHOLDER[field]), SearchHighlight], [field])
+  // 占位文字按调用时的语言取值
+  const extensions = useMemo(() => [...buildExtensions(() => t().editor.placeholder[field]), SearchHighlight], [field])
   const editor = useEditor({
     extensions,
     content: initialDoc ?? '',
@@ -221,13 +223,18 @@ export function DocEditor({ row, field, initialDoc, initialRev, onSwitch, onClos
     return () => clearTimeout(timer)
   }, [editor, highlightKey])
 
+  // 切换语言后刷新占位文字（Placeholder 装饰只在事务时重算）
+  useEffect(() => {
+    if (editor && !editor.isDestroyed) editor.view.dispatch(editor.state.tr)
+  }, [editor, lang])
+
   async function onExport(kind: ExportTarget) {
     if (!editor) return
     setExporting(kind)
     try {
       await exportDocument(kind, editor.getJSON(), row, field)
     } catch (err) {
-      notify(`导出失败：${errorMessage(err)}`, 'error')
+      notify(t().notify.exportFailed(errorMessage(err)), 'error')
     } finally {
       setExporting(null)
     }
@@ -239,7 +246,7 @@ export function DocEditor({ row, field, initialDoc, initialRev, onSwitch, onClos
       const { rev } = await fetchDoc(row.id, field)
       await saver.overwrite(rev)
     } catch (err) {
-      notify(`覆盖保存失败：${errorMessage(err)}`, 'error')
+      notify(t().notify.overwriteFailed(errorMessage(err)), 'error')
     }
   }
 
@@ -254,7 +261,7 @@ export function DocEditor({ row, field, initialDoc, initialRev, onSwitch, onClos
             onResolve={() => setConflictOpen(true)}
           />
           <Box sx={{ flex: 1 }} />
-          <Tooltip title={`导出${DOC_LABEL[field]}为 PDF`}>
+          <Tooltip title={m.editor.exportPdf(docLabel)}>
             <Button
               size="small"
               color="inherit"
@@ -266,7 +273,7 @@ export function DocEditor({ row, field, initialDoc, initialRev, onSwitch, onClos
               PDF
             </Button>
           </Tooltip>
-          <Tooltip title={`导出${DOC_LABEL[field]}为 Word（.docx）`}>
+          <Tooltip title={m.editor.exportWord(docLabel)}>
             <Button
               size="small"
               color="inherit"
@@ -339,27 +346,27 @@ export function DocEditor({ row, field, initialDoc, initialRev, onSwitch, onClos
         </Fade>
       </Box>
 
-      <LinkBubbleMenu labels={LINK_MENU_LABELS} />
-      <TableBubbleMenu labels={TABLE_MENU_LABELS} />
+      <LinkBubbleMenu labels={m.editor.linkMenu} />
+      <TableBubbleMenu labels={m.editor.tableMenu} />
 
       <Dialog open={conflictOpen} onClose={() => setConflictOpen(false)}>
         <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <WarningAmberOutlined color="warning" /> 这份{DOC_LABEL[field]}已被他人修改
+          <WarningAmberOutlined color="warning" /> {m.editor.conflictTitle(docLabel)}
         </DialogTitle>
         <DialogContent>
           <DialogContentText>
-            你打开之后，其他人保存了新的版本，你的修改暂未保存。
+            {m.editor.conflictBody1}
             <br />
-            可以重新加载最新版本（放弃你未保存的修改），或用你的内容覆盖对方的版本。
+            {m.editor.conflictBody2}
           </DialogContentText>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2.5 }}>
           <Button onClick={() => setConflictOpen(false)} color="inherit">
-            稍后处理
+            {m.editor.later}
           </Button>
-          <Button onClick={onReload}>重新加载</Button>
+          <Button onClick={onReload}>{m.editor.reload}</Button>
           <Button onClick={overwrite} variant="contained" color="warning">
-            覆盖保存
+            {m.editor.overwrite}
           </Button>
         </DialogActions>
       </Dialog>

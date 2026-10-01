@@ -13,6 +13,7 @@ import ToggleButton from '@mui/material/ToggleButton'
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
 import Typography from '@mui/material/Typography'
 import { useEffect, useRef, useState } from 'react'
+import { useT } from '@/i18n'
 import type { When } from './filter'
 
 type Props = {
@@ -30,6 +31,7 @@ type Props = {
 }
 
 export function ListToolbar({ q, types, when, typeOptions, shown, total, creating, byRelevance, onChange, onCreate }: Props) {
+  const m = useT()
   // 输入框本地受控，URL 更新交给 onChange（避免输入法组字时被打断）
   const [search, setSearch] = useState(q)
   const [prevQ, setPrevQ] = useState(q)
@@ -70,7 +72,7 @@ export function ListToolbar({ q, types, when, typeOptions, shown, total, creatin
     >
       <TextField
         size="small"
-        placeholder="搜索全部内容：Client、面试者、JD、面试题…"
+        placeholder={m.toolbar.searchPlaceholder}
         value={search}
         inputRef={inputRef}
         onChange={(e) => {
@@ -86,7 +88,7 @@ export function ListToolbar({ q, types, when, typeOptions, shown, total, creatin
         }}
         sx={{ width: 340, '& .MuiOutlinedInput-root': { bgcolor: 'background.paper' } }}
         slotProps={{
-          htmlInput: { 'aria-label': '搜索' },
+          htmlInput: { 'aria-label': m.toolbar.search },
           input: {
             startAdornment: (
               <InputAdornment position="start">
@@ -98,7 +100,7 @@ export function ListToolbar({ q, types, when, typeOptions, shown, total, creatin
                 <IconButton
                   size="small"
                   edge="end"
-                  aria-label="清空搜索"
+                  aria-label={m.toolbar.clearSearch}
                   onClick={() => {
                     setSearch('')
                     onChange({ q: '' })
@@ -146,7 +148,7 @@ export function ListToolbar({ q, types, when, typeOptions, shown, total, creatin
             return <Chip key={key} size="small" label={option} {...itemProps} />
           })
         }
-        renderInput={(params) => <TextField {...params} placeholder={types.length ? '' : '面试类型'} />}
+        renderInput={(params) => <TextField {...params} placeholder={types.length ? '' : m.toolbar.typeFilter} />}
       />
       <ToggleButtonGroup
         size="small"
@@ -155,18 +157,18 @@ export function ListToolbar({ q, types, when, typeOptions, shown, total, creatin
         onChange={(_, v: When | null) => v && onChange({ when: v })}
         sx={{ bgcolor: 'background.paper' }}
       >
-        <ToggleButton value="all">全部</ToggleButton>
-        <ToggleButton value="upcoming">即将到来</ToggleButton>
-        <ToggleButton value="past">已过去</ToggleButton>
+        <ToggleButton value="all">{m.toolbar.when.all}</ToggleButton>
+        <ToggleButton value="upcoming">{m.toolbar.when.upcoming}</ToggleButton>
+        <ToggleButton value="past">{m.toolbar.when.past}</ToggleButton>
       </ToggleButtonGroup>
       <Typography variant="body2" color="text.secondary" sx={{ ml: 0.5 }}>
-        {searching ? `找到 ${shown} 条` : shown === total ? `共 ${total} 条` : `${shown} / ${total} 条`}
+        {searching ? m.toolbar.found(shown) : shown === total ? m.toolbar.total(total) : m.toolbar.partial(shown, total)}
       </Typography>
       {searching && (
         <Chip
           size="small"
           icon={<SortOutlined />}
-          label="按相关度"
+          label={m.toolbar.byRelevance}
           color={byRelevance ? 'primary' : 'default'}
           variant={byRelevance ? 'filled' : 'outlined'}
           onClick={byRelevance ? undefined : () => onChange({ sort: 'relevance' })}
@@ -175,7 +177,7 @@ export function ListToolbar({ q, types, when, typeOptions, shown, total, creatin
       )}
       <Box sx={{ flex: 1 }} />
       <Button variant="contained" startIcon={<Add />} onClick={onCreate} loading={creating}>
-        新建面试
+        {m.toolbar.create}
       </Button>
     </Box>
   )

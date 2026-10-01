@@ -10,6 +10,7 @@ import { stickyPanelHeaderSx } from '@/features/editor/panelLayout'
 import { waitForPendingSave } from '@/features/editor/DocSaver'
 import { signImagePaths } from '@/features/editor/images'
 import { docKey } from '@/features/editor/useDocAutosave'
+import { useT } from '@/i18n'
 import { fetchDoc } from './api'
 import { errorMessage } from './queries'
 import type { DocField, Interview } from './types'
@@ -31,6 +32,7 @@ type Props = {
 }
 
 export function DocPanel({ row, field, onSwitch, onClose, highlight }: Props) {
+  const m = useT()
   const q = useQuery({
     queryKey: ['doc', row.id, field],
     queryFn: () => loadDoc(row.id, field),
@@ -71,11 +73,11 @@ export function DocPanel({ row, field, onSwitch, onClose, highlight }: Props) {
                 sx={{ maxWidth: 860, mx: 'auto' }}
                 action={
                   <Button color="inherit" size="small" onClick={() => void q.refetch()}>
-                    重试
+                    {m.common.retry}
                   </Button>
                 }
               >
-                加载失败：{errorMessage(q.error)}
+                {m.common.loadFailed(errorMessage(q.error))}
               </Alert>
             ) : (
               <Paper

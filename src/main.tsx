@@ -5,20 +5,19 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider } from '@tanstack/react-router'
-import dayjs from 'dayjs'
-import 'dayjs/locale/zh-cn'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { useLang } from '@/i18n'
 import { Notifier } from '@/lib/notify'
 import { queryClient } from '@/lib/queryClient'
 import { router } from '@/router'
-import { theme } from '@/theme'
+import { themes } from '@/theme'
 
-dayjs.locale('zh-cn')
-
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <ThemeProvider theme={theme} defaultMode="system">
+function App() {
+  // 切换语言时换用对应语言的 MUI 主题与日期选择器区域设置
+  const lang = useLang()
+  return (
+    <ThemeProvider theme={themes[lang]} defaultMode="system">
       <CssBaseline enableColorScheme />
       <GlobalStyles
         styles={{
@@ -32,12 +31,18 @@ createRoot(document.getElementById('root')!).render(
           },
         }}
       />
-      <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="zh-cn">
+      <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={lang === 'zh' ? 'zh-cn' : 'en'}>
         <QueryClientProvider client={queryClient}>
           <RouterProvider router={router} />
           <Notifier />
         </QueryClientProvider>
       </LocalizationProvider>
     </ThemeProvider>
+  )
+}
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <App />
   </StrictMode>,
 )

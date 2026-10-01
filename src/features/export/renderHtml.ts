@@ -1,6 +1,7 @@
 import type { JSONContent } from '@tiptap/core'
 import { generateHTML } from '@tiptap/html'
 import { buildExtensions } from '@/features/editor/extensions'
+import { t } from '@/i18n'
 
 export type ExportTarget = 'pdf' | 'docx'
 export type ImageLoader = (attrs: Record<string, unknown>) => Promise<Blob | null>
@@ -35,7 +36,7 @@ async function inlineImages(node: JSONContent, target: ExportTarget, load: Image
   if (node.type !== 'image' || !node.attrs) return next
 
   const blob = await load(node.attrs).catch(() => null)
-  if (!blob) return { type: 'paragraph', content: [{ type: 'text', text: '[图片无法加载]' }] }
+  if (!blob) return { type: 'paragraph', content: [{ type: 'text', text: t().editor.imageUnavailable }] }
   const width = Number(node.attrs.width) || null
   next.attrs =
     target === 'docx'

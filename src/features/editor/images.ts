@@ -1,3 +1,4 @@
+import { t } from '@/i18n'
 import { IMAGE_BUCKET, supabase } from '@/lib/supabase'
 
 const MAX_EDGE = 1600
@@ -29,7 +30,7 @@ export async function compressImage(file: File): Promise<Blob> {
   ctx.fillStyle = '#fff'
   ctx.fillRect(0, 0, canvas.width, canvas.height)
   const jpeg = await toBlob('image/jpeg', 0.88)
-  if (!jpeg) throw new Error('图片压缩失败')
+  if (!jpeg) throw new Error(t().notify.compressFailed)
   return jpeg
 }
 
