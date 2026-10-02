@@ -14,7 +14,7 @@ import { useRouter } from '@tanstack/react-router'
 import { useState, type FormEvent } from 'react'
 import { LanguageSwitch } from '@/components/LanguageSwitch'
 import { LogoMark } from '@/components/LogoMark'
-import { useT } from '@/i18n'
+import { LANG_SWITCH_ENABLED, useT } from '@/i18n'
 import { supabase } from '@/lib/supabase'
 import { safeRedirect } from './session'
 
@@ -53,9 +53,11 @@ export function LoginPage({ redirect }: { redirect?: string }) {
         ].join(','),
       })}
     >
-      <Box sx={{ position: 'fixed', top: 16, right: 16 }}>
-        <LanguageSwitch />
-      </Box>
+      {LANG_SWITCH_ENABLED && (
+        <Box sx={{ position: 'fixed', top: 16, right: 16 }}>
+          <LanguageSwitch />
+        </Box>
+      )}
       <Grow in timeout={450}>
         <Paper
           component="form"

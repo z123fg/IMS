@@ -1,10 +1,11 @@
 import ToggleButton from '@mui/material/ToggleButton'
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
-import { setLang, useLang, useT, type Lang } from '@/i18n'
+import { LANG_SWITCH_ENABLED, setLang, useLang, useT, type Lang } from '@/i18n'
 
 export function LanguageSwitch() {
   const lang = useLang()
   const m = useT()
+  if (!LANG_SWITCH_ENABLED) return null
   return (
     <ToggleButtonGroup
       size="small"

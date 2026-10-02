@@ -12,7 +12,17 @@ export type { Messages }
 const STORAGE_KEY = 'ims.lang'
 const MESSAGES: Record<Lang, Messages> = { zh, en }
 
+/**
+ * 语言切换入口暂时关闭：界面固定为英文（翻译与切换逻辑保留，改为 true 即可恢复）。
+ * 关闭期间忽略浏览器里保存过的选择，否则之前选过中文的人会切不回来。
+ */
+export const LANG_SWITCH_ENABLED = false
+
+/** 关闭切换时使用的固定语言；端到端测试通过 VITE_UI_LANG=zh 使用中文界面 */
+const FIXED_LANG: Lang = import.meta.env.VITE_UI_LANG === 'zh' ? 'zh' : 'en'
+
 function detect(): Lang {
+  if (!LANG_SWITCH_ENABLED) return FIXED_LANG
   try {
     const saved = localStorage.getItem(STORAGE_KEY)
     if (saved === 'zh' || saved === 'en') return saved
