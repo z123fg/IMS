@@ -223,6 +223,14 @@ test('粘贴图片上传、刷新后显示；导出 PDF / Word；删除时清理
     const buf = await readFile(path)
     expect(buf.subarray(0, magic.length).toString('latin1')).toBe(magic)
     expect(buf.length).toBeGreaterThan(5_000)
+    if (ext === 'docx') {
+      // 页面设置 <w:sectPr> 必须是正文最后一个元素，否则 Word 打开时第一页为空白
+      const { default: JSZip } = await import('jszip')
+      const xml = await (await JSZip.loadAsync(buf)).file('word/document.xml')!.async('string')
+      const body = xml.slice(xml.indexOf('<w:body>') + 8, xml.indexOf('</w:body>')).trim()
+      expect(body.startsWith('<w:sectPr')).toBe(false)
+      expect(body.endsWith('</w:sectPr>')).toBe(true)
+    }
   }
 
   // 删除
